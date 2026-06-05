@@ -1,6 +1,10 @@
 #!/bin/sh
 set -e
 
+# Suporte a variáveis com prefixo VITE_ (Easypanel) ou sem prefixo (docker-compose)
+SUPABASE_URL="${SUPABASE_URL:-${VITE_SUPABASE_URL:-}}"
+SUPABASE_ANON_KEY="${SUPABASE_ANON_KEY:-${VITE_SUPABASE_ANON_KEY:-}}"
+
 CONFIG_FILE="/usr/share/nginx/html/config.js"
 TEMPLATE="/etc/dashboard/config.template.js"
 
