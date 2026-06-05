@@ -1,0 +1,382 @@
+
+<h2 class="sr-only">Dashboard financiero Business Intelligence - Plataforma Cubanos BR 2026</h2>
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-sans); }
+.dash { padding: 1.5rem 0; }
+.top-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 12px; }
+.top-bar h1 { font-size: 16px; font-weight: 500; color: var(--color-text-primary); }
+.filters { display: flex; gap: 8px; }
+.filters select { font-size: 13px; padding: 6px 10px; border-radius: var(--border-radius-md); }
+.metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 1.5rem; }
+.metric { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 14px; }
+.metric-label { font-size: 11px; color: var(--color-text-secondary); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
+.metric-value { font-size: 22px; font-weight: 500; color: var(--color-text-primary); }
+.metric-sub { font-size: 12px; color: var(--color-text-secondary); margin-top: 2px; }
+.metric-value.green { color: #1D9E75; }
+.metric-value.red { color: #D85A30; }
+.charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 1.5rem; }
+.chart-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 16px; }
+.chart-title { font-size: 13px; font-weight: 500; color: var(--color-text-secondary); margin-bottom: 12px; }
+.legend { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 10px; font-size: 12px; color: var(--color-text-secondary); }
+.legend span { display: flex; align-items: center; gap: 4px; }
+.legend-dot { width: 10px; height: 10px; border-radius: 2px; }
+.charts-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 1.5rem; }
+.table-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 16px; margin-bottom: 1.5rem; }
+.table-card table { width: 100%; font-size: 13px; border-collapse: collapse; }
+.table-card th { font-size: 11px; font-weight: 500; color: var(--color-text-secondary); text-align: left; padding: 6px 8px; border-bottom: 0.5px solid var(--color-border-tertiary); text-transform: uppercase; letter-spacing: 0.04em; }
+.table-card td { padding: 8px 8px; border-bottom: 0.5px solid var(--color-border-tertiary); color: var(--color-text-primary); }
+.table-card tr:last-child td { border-bottom: none; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: var(--border-radius-md); font-size: 11px; font-weight: 500; }
+.badge-green { background: #EAF3DE; color: #3B6D11; }
+.badge-amber { background: #FAEEDA; color: #854F0B; }
+.badge-blue { background: #E6F1FB; color: #185FA5; }
+@media (max-width: 500px) { .charts-row, .charts-row-3 { grid-template-columns: 1fr; } }
+</style>
+
+<div class="dash">
+
+<div class="top-bar">
+  <div>
+    <div style="font-size:11px; color:var(--color-text-secondary); text-transform:uppercase; letter-spacing:.04em; margin-bottom:2px;">Business intelligence</div>
+    <h1>Plataforma Cubanos BR — 2026</h1>
+  </div>
+  <div class="filters">
+    <select id="filtroMes" onchange="actualizar()">
+      <option value="0">Todos los meses</option>
+      <option value="1">Enero</option>
+      <option value="2">Febrero</option>
+      <option value="3">Marzo</option>
+      <option value="4" selected>Abril</option>
+      <option value="5">Mayo</option>
+    </select>
+    <select id="filtroAtendente" onchange="actualizar()">
+      <option value="todos">Todos</option>
+      <option value="ERIC">Eric</option>
+      <option value="SOLANGE">Solange</option>
+      <option value="MICHEL">Michel</option>
+      <option value="JESSICA">Jessica</option>
+      <option value="LARITIZA">Laritiza</option>
+    </select>
+  </div>
+</div>
+
+<div class="metric-grid" id="metricGrid"></div>
+
+<div class="charts-row">
+  <div class="chart-card">
+    <div class="chart-title">Facturamiento mensual</div>
+    <div class="legend">
+      <span><span class="legend-dot" style="background:#378ADD"></span>Entradas</span>
+      <span><span class="legend-dot" style="background:#D85A30"></span>Costos</span>
+      <span><span class="legend-dot" style="background:#1D9E75"></span>Lucro</span>
+    </div>
+    <div style="position:relative; height:220px;">
+      <canvas id="chartMensual" role="img" aria-label="Gráfico de barras con facturamiento mensual, costos y lucro por mes"></canvas>
+    </div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-title">Facturamiento por atendente</div>
+    <div class="legend" id="legendAtendente"></div>
+    <div style="position:relative; height:220px;">
+      <canvas id="chartAtendente" role="img" aria-label="Gráfico de barras con facturamiento por atendente"></canvas>
+    </div>
+  </div>
+</div>
+
+<div class="charts-row">
+  <div class="chart-card">
+    <div class="chart-title">Distribución por servicio</div>
+    <div class="legend" id="legendServicio"></div>
+    <div style="position:relative; height:240px;">
+      <canvas id="chartServicio" role="img" aria-label="Gráfico de dona con distribución por tipo de servicio"></canvas>
+    </div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-title">Marketing — métricas clave</div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:8px;" id="marketingMetrics"></div>
+  </div>
+</div>
+
+<div class="table-card">
+  <div class="chart-title" style="margin-bottom:12px;">Rentabilidad por servicio</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Servicio</th>
+        <th>Valor</th>
+        <th>Costo var.</th>
+        <th>Lucro</th>
+        <th>Margen</th>
+        <th>ROI</th>
+      </tr>
+    </thead>
+    <tbody id="tablaServicios"></tbody>
+  </table>
+</div>
+
+<div class="charts-row">
+  <div class="table-card" style="margin-bottom:0">
+    <div class="chart-title" style="margin-bottom:12px;">Colaboradores</div>
+    <table>
+      <thead><tr><th>Nombre</th><th>Salario</th><th>Comisión</th><th>Total</th></tr></thead>
+      <tbody id="tablaColaboradores"></tbody>
+    </table>
+  </div>
+  <div class="chart-card">
+    <div class="chart-title">Costos — estructura</div>
+    <div class="legend" id="legendCostos"></div>
+    <div style="position:relative; height:200px;">
+      <canvas id="chartCostos" role="img" aria-label="Gráfico de dona con distribución de costos"></canvas>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const DATA = {
+  mensual: {
+    labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May'],
+    entradas: [60086, 61156, 87179, 100309, 1535],
+    costos:   [35611, 39596, 47225, 58748, 0],
+    lucro:    [24475, 21560, 39833, 39935, 0],
+  },
+  marketing: {
+    inversion: [7793, 9225, 14454, 16742, 0],
+    leads:     [2350, 3128, 0, 0, 0],
+    ventas:    [0, 0, 430, 0, 0],
+    roas:      [6.80, 7.14, 7.21, 0, 0],
+  },
+  atendentes: ['Eric','Solange','Michel','Jessica','Laritiza'],
+  atendentesKey: ['ERIC','SOLANGE','MICHEL','JESSICA','LARITIZA'],
+  atendenteFact: [38000, 32000, 28000, 18000, 6000],
+  servicios: [
+    { nombre:'TRAD. CNH',   valor:120,  cv:74.1,  lucro:9.9,  mc:0.6175, roi:0.090 },
+    { nombre:'AG. PF.',     valor:120,  cv:55.5,  lucro:28.5, mc:0.4625, roi:0.311 },
+    { nombre:'CAMB. END.',  valor:97,   cv:22.3,  lucro:45.6, mc:0.23,   roi:0.887 },
+    { nombre:'DES. REF.',   valor:147,  cv:33.8,  lucro:69.1, mc:0.23,   roi:0.887 },
+    { nombre:'PDF ÚNICO',   valor:147,  cv:33.8,  lucro:69.1, mc:0.23,   roi:0.887 },
+    { nombre:'RES. PMT.',   valor:600,  cv:138,   lucro:282,  mc:0.23,   roi:0.887 },
+    { nombre:'VISA REU.',   valor:600,  cv:138,   lucro:282,  mc:0.23,   roi:0.887 },
+    { nombre:'SISCONARE',   valor:147,  cv:33.8,  lucro:69.1, mc:0.23,   roi:0.887 },
+    { nombre:'CPF',         valor:80,   cv:18.4,  lucro:21.6, mc:0.23,   roi:0.887 },
+    { nombre:'CURRÍCULO',   valor:60,   cv:13.8,  lucro:28.2, mc:0.23,   roi:0.887 },
+  ],
+  serviciosDist: {
+    labels: ['CAMB. END.','AG. PF.','DES. REF.','PDF ÚNICO','TRAD. CNH','RES. PMT.','VISA REU.','CPF','SISCONARE','Otros'],
+    valores: [7115,16233,4503,9299,9501,12295,9800,1343,4958,3000]
+  },
+  costos: {
+    labels: ['Marketing','Ventas','Pessoal','Estructura','Softwares','Otros'],
+    valores: [16742,9937,19900,5481,500,2000],
+    colors: ['#D85A30','#BA7517','#378ADD','#7F77DD','#1D9E75','#888780']
+  },
+  colaboradores: [
+    { nombre:'Jessica', salario:1900, comision:1667 },
+    { nombre:'Solange', salario:1900, comision:1667 },
+    { nombre:'Eric',    salario:1900, comision:1667 },
+    { nombre:'Jorge',   salario:1900, comision:1000 },
+    { nombre:'Victor',  salario:1900, comision:500  },
+    { nombre:'Angel',   salario:1900, comision:2000 },
+  ]
+};
+
+const COLORES = ['#378ADD','#1D9E75','#D85A30','#BA7517','#7F77DD','#888780','#D4537E','#639922','#E24B4A','#5DCAA5'];
+
+let charts = {};
+
+function fmt(n) { return 'R$ ' + Math.round(n).toLocaleString('pt-BR'); }
+function pct(n) { return (n*100).toFixed(1) + '%'; }
+
+function getMes() { return parseInt(document.getElementById('filtroMes').value); }
+
+function getEntradas(mes) {
+  if (mes === 0) return DATA.mensual.entradas.reduce((a,b)=>a+b,0);
+  return DATA.mensual.entradas[mes-1] || 0;
+}
+function getCostos(mes) {
+  if (mes === 0) return DATA.mensual.costos.reduce((a,b)=>a+b,0);
+  return DATA.mensual.costos[mes-1] || 0;
+}
+function getLucro(mes) {
+  if (mes === 0) return DATA.mensual.lucro.reduce((a,b)=>a+b,0);
+  return DATA.mensual.lucro[mes-1] || 0;
+}
+
+function renderMetrics(mes) {
+  const ent = getEntradas(mes);
+  const cos = getCostos(mes);
+  const luc = getLucro(mes);
+  const margin = ent > 0 ? luc/ent : 0;
+  const inv = mes === 0 ? DATA.marketing.inversion.reduce((a,b)=>a+b,0) : DATA.marketing.inversion[mes-1]||0;
+  const roas = mes > 0 && mes <= 3 ? DATA.marketing.roas[mes-1] : (inv>0 ? ent/inv : 0);
+
+  const metrics = [
+    { label:'Facturamiento', value: fmt(ent), sub: mes===0 ? 'Acumulado 2026' : '' },
+    { label:'Costos totales', value: fmt(cos), sub: pct(ent>0?cos/ent:0) + ' del fact.' },
+    { label:'Lucro neto', value: fmt(luc), cls: luc>=0?'green':'red', sub: '' },
+    { label:'Margen lucro', value: pct(margin), cls: margin>=0.3?'green':'amber', sub: '' },
+    { label:'Inv. marketing', value: fmt(inv), sub: '' },
+    { label:'ROAS', value: roas>0 ? roas.toFixed(2)+'x' : '—', cls: roas>=6?'green':'', sub: '' },
+  ];
+
+  document.getElementById('metricGrid').innerHTML = metrics.map(m =>
+    `<div class="metric">
+      <div class="metric-label">${m.label}</div>
+      <div class="metric-value ${m.cls||''}">${m.value}</div>
+      ${m.sub ? `<div class="metric-sub">${m.sub}</div>` : ''}
+    </div>`
+  ).join('');
+}
+
+function renderMensual() {
+  const ctx = document.getElementById('chartMensual').getContext('2d');
+  if (charts.mensual) charts.mensual.destroy();
+  charts.mensual = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: DATA.mensual.labels,
+      datasets: [
+        { label:'Entradas', data: DATA.mensual.entradas, backgroundColor:'#378ADD', borderRadius:3 },
+        { label:'Costos',   data: DATA.mensual.costos,   backgroundColor:'#D85A30', borderRadius:3 },
+        { label:'Lucro',    data: DATA.mensual.lucro,    backgroundColor:'#1D9E75', borderRadius:3 },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 12 } } },
+        y: { grid: { color: 'rgba(128,128,128,0.1)' }, ticks: { font: { size: 11 }, callback: v => 'R$' + (v/1000).toFixed(0) + 'k' } }
+      }
+    }
+  });
+}
+
+function renderAtendente() {
+  const ctx = document.getElementById('chartAtendente').getContext('2d');
+  if (charts.atendente) charts.atendente.destroy();
+  const colors = COLORES.slice(0,5);
+  document.getElementById('legendAtendente').innerHTML = DATA.atendentes.map((a,i) =>
+    `<span><span class="legend-dot" style="background:${colors[i]}"></span>${a}</span>`
+  ).join('');
+  charts.atendente = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: DATA.atendentes,
+      datasets: [{ label:'Facturado', data: DATA.atendenteFact, backgroundColor: colors, borderRadius: 3 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 12 } } },
+        y: { grid: { color: 'rgba(128,128,128,0.1)' }, ticks: { font: { size: 11 }, callback: v => 'R$' + (v/1000).toFixed(0) + 'k' } }
+      }
+    }
+  });
+}
+
+function renderServicio() {
+  const ctx = document.getElementById('chartServicio').getContext('2d');
+  if (charts.servicio) charts.servicio.destroy();
+  const total = DATA.serviciosDist.valores.reduce((a,b)=>a+b,0);
+  document.getElementById('legendServicio').innerHTML = DATA.serviciosDist.labels.slice(0,5).map((l,i) =>
+    `<span><span class="legend-dot" style="background:${COLORES[i]}"></span>${l} ${pct(DATA.serviciosDist.valores[i]/total)}</span>`
+  ).join('');
+  charts.servicio = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: DATA.serviciosDist.labels,
+      datasets: [{ data: DATA.serviciosDist.valores, backgroundColor: COLORES, borderWidth: 1, borderColor: 'transparent' }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => c.label + ': R$' + Math.round(c.raw).toLocaleString('pt-BR') } } },
+      cutout: '60%'
+    }
+  });
+}
+
+function renderCostos() {
+  const ctx = document.getElementById('chartCostos').getContext('2d');
+  if (charts.costos) charts.costos.destroy();
+  const total = DATA.costos.valores.reduce((a,b)=>a+b,0);
+  document.getElementById('legendCostos').innerHTML = DATA.costos.labels.map((l,i) =>
+    `<span><span class="legend-dot" style="background:${DATA.costos.colors[i]}"></span>${l} ${pct(DATA.costos.valores[i]/total)}</span>`
+  ).join('');
+  charts.costos = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: DATA.costos.labels,
+      datasets: [{ data: DATA.costos.valores, backgroundColor: DATA.costos.colors, borderWidth: 1, borderColor: 'transparent' }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      cutout: '60%'
+    }
+  });
+}
+
+function renderMarketing(mes) {
+  const inv = mes===0 ? DATA.marketing.inversion.reduce((a,b)=>a+b,0) : DATA.marketing.inversion[mes-1]||0;
+  const leads = mes===0 ? DATA.marketing.leads.reduce((a,b)=>a+b,0) : DATA.marketing.leads[mes-1]||0;
+  const ventas = mes===0 ? DATA.marketing.ventas.reduce((a,b)=>a+b,0) : DATA.marketing.ventas[mes-1]||0;
+  const cpl = leads>0 ? (inv/leads).toFixed(2) : '—';
+  const cac = ventas>0 ? (inv/ventas).toFixed(2) : '—';
+  const items = [
+    { label:'Inversión total', value: fmt(inv) },
+    { label:'Leads', value: leads>0?leads.toLocaleString('pt-BR'):'—' },
+    { label:'Ventas nuevas', value: ventas>0?ventas:'—' },
+    { label:'CPL', value: cpl!=='—'?'R$'+cpl:'—' },
+    { label:'CAC', value: cac!=='—'?'R$'+cac:'—' },
+    { label:'ROAS', value: inv>0&&mes>0&&mes<=3?DATA.marketing.roas[mes-1].toFixed(2)+'x':'—' },
+  ];
+  document.getElementById('marketingMetrics').innerHTML = items.map(i =>
+    `<div class="metric">
+      <div class="metric-label">${i.label}</div>
+      <div class="metric-value" style="font-size:18px">${i.value}</div>
+    </div>`
+  ).join('');
+}
+
+function renderTablas() {
+  document.getElementById('tablaServicios').innerHTML = DATA.servicios.map(s =>
+    `<tr>
+      <td>${s.nombre}</td>
+      <td>R$${s.valor}</td>
+      <td>R$${s.cv.toFixed(1)}</td>
+      <td style="color:#1D9E75; font-weight:500">R$${s.lucro.toFixed(1)}</td>
+      <td><span class="badge ${s.mc>=0.4?'badge-green':'badge-amber'}">${pct(s.mc)}</span></td>
+      <td>${pct(s.roi)}</td>
+    </tr>`
+  ).join('');
+
+  document.getElementById('tablaColaboradores').innerHTML = DATA.colaboradores.map(c => {
+    const total = c.salario + c.comision;
+    return `<tr>
+      <td style="font-weight:500">${c.nombre}</td>
+      <td>R$${c.salario.toLocaleString('pt-BR')}</td>
+      <td>R$${c.comision.toLocaleString('pt-BR')}</td>
+      <td style="font-weight:500">R$${total.toLocaleString('pt-BR')}</td>
+    </tr>`;
+  }).join('');
+}
+
+function actualizar() {
+  const mes = getMes();
+  renderMetrics(mes);
+  renderMarketing(mes);
+}
+
+renderMensual();
+renderAtendente();
+renderServicio();
+renderCostos();
+renderTablas();
+actualizar();
+</script>
