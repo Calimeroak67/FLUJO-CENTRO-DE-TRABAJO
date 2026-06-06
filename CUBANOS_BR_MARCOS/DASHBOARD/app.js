@@ -9,7 +9,7 @@ const SALARIOS = {
 };
 const COMISION_RATE = 0.05;
 
-let supabase = null;
+let supabaseClient = null;
 let charts = {};
 let rawData = { entradas: [], salidas: [], clientes: [] };
 let DATA = emptyData();
@@ -416,9 +416,9 @@ function renderAll() {
 async function fetchData() {
   const ano = getAno();
   const [entRes, salRes, cliRes] = await Promise.all([
-    supabase.from('entradas').select('*').eq('ano', ano),
-    supabase.from('salidas').select('*').eq('ano', ano),
-    supabase.from('clientes').select('*'),
+    supabaseClient.from('entradas').select('*').eq('ano', ano),
+    supabaseClient.from('salidas').select('*').eq('ano', ano),
+    supabaseClient.from('clientes').select('*'),
   ]);
 
   if (entRes.error) throw entRes.error;
@@ -450,10 +450,10 @@ function scheduleRefresh() {
 
 function setupRealtime() {
   if (realtimeChannel) {
-    supabase.removeChannel(realtimeChannel);
+    supabaseClient.removeChannel(realtimeChannel);
   }
 
-  realtimeChannel = supabase
+  realtimeChannel = supabaseClient
     .channel('dashboard-realtime')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'entradas' }, scheduleRefresh)
     .on('postgres_changes', { event: '*', schema: 'public', table: 'salidas' }, scheduleRefresh)
@@ -472,7 +472,7 @@ async function init() {
   }
 
   setStatus('loading', 'Conectando...');
-  supabase = window.supabase.createClient(cfg.url, cfg.anonKey);
+  supabaseClient = window.supabase.createClient(cfg.url, cfg.anonKey);
 
   await refreshDashboard();
   setupRealtime();
