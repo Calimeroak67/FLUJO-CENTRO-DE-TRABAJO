@@ -1,12 +1,26 @@
-FROM nginx:alpine
-# syntax=docker/dockerfile:1
-COPY index.html app.js /usr/share/nginx/html/
-COPY config.template.js /etc/dashboard/config.template.js
-COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
-COPY docker/entrypoint.sh /entrypoint.sh
+FROM node:20-alpine AS builder
 
-RUN chmod +x /entrypoint.sh
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci
+
+COPY . .
+
+ARG VITE_SUPABASE_URL
+ARG VITE_SUPABASE_ANON_KEY
+ARG VITE_SUPABASE_SERVICE_KEY
+
+RUN VITE_SUPABASE_URL=$VITE_SUPABASE_URL \
+    VITE_SUPABASE_ANON_KEY=$VITE_SUPABASE_ANON_KEY \
+    VITE_SUPABASE_SERVICE_KEY=$VITE_SUPABASE_SERVICE_KEY \
+    npm run build
+
+FROM nginx:alpine
+
+COPY --from=builder /app/dist /usr/share/nginx/html
+COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
 
-ENTRYPOINT ["/entrypoint.sh"]
+CMD ["nginx", "-g", "daemon off;"]
