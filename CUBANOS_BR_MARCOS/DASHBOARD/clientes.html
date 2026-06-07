@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clientes | Dashboard Cubanos BR</title>
+  <style>
+    :root {
+      --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      --bg: #f5f5f4;
+      --surface: #ffffff;
+      --border: #e5e5e5;
+      --text: #1a1a1a;
+      --muted: #6b6b6b;
+      --accent: #378ADD;
+      --accent-dark: #185FA5;
+      --success: #1D9E75;
+      --danger: #D85A30;
+      --radius: 10px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font-sans); background: var(--bg); color: var(--text); }
+    .dash { max-width: 1280px; margin: 0 auto; padding: 1.5rem; }
+    .top-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 1rem; }
+    .top-bar h1 { font-size: 18px; font-weight: 600; }
+    .top-bar .subtitle { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 4px; }
+    .top-bar .actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .button, button { border: 1px solid var(--border); border-radius: 999px; padding: 10px 14px; background: var(--surface); color: var(--text); cursor: pointer; text-decoration: none; font-size: 13px; }
+    .button.primary, button.primary { background: var(--accent); color: #fff; border-color: transparent; }
+    .button.secondary { background: #fff; color: var(--accent-dark); }
+    .button:hover, button:hover { opacity: .92; }
+    .status-badge { font-size: 11px; padding: 4px 10px; border-radius: 20px; font-weight: 500; }
+    .status-live { background: #EAF3DE; color: #3B6D11; }
+    .status-loading { background: #E6F1FB; color: #185FA5; }
+    .status-error { background: #FAEEDA; color: #854F0B; }
+    .tabs { display: flex; gap: 8px; margin-bottom: 1rem; }
+    .tab { flex: 1 1 auto; text-align: center; padding: 12px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer; }
+    .tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .controls { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 1rem; flex-wrap: wrap; }
+    .controls input { width: 100%; max-width: 420px; padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--border); background: #fff; }
+    .note { color: var(--muted); font-size: 13px; }
+    .table-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 940px; }
+    th, td { padding: 12px 14px; border-bottom: 1px solid var(--border); font-size: 13px; text-align: left; vertical-align: middle; }
+    th { background: #fafafa; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; font-weight: 600; }
+    td { color: var(--text); }
+    tr:last-child td { border-bottom: none; }
+    .small-text { font-size: 12px; color: var(--muted); }
+    .editable-input { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: #fff; color: var(--text); }
+    .actions-cell { display: flex; gap: 6px; flex-wrap: wrap; }
+    .pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px; border-radius: 999px; background: #F0F7FF; color: var(--accent-dark); font-size: 12px; }
+    @media (max-width: 960px) { .top-bar, .controls { flex-direction: column; align-items: stretch; } table { min-width: 0; } }
+  </style>
+</head>
+<body>
+  <div class="dash">
+    <div class="top-bar">
+      <div>
+        <div class="subtitle">Edición de clientes</div>
+        <h1>Clientes Supabase</h1>
+      </div>
+      <div class="actions">
+        <a class="button secondary" href="index.html">Volver al dashboard</a>
+        <span id="statusBadge" class="status-badge status-loading">Conectando...</span>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button type="button" class="tab active" data-tab="all">Todos los clientes</button>
+      <button type="button" class="tab" data-tab="kommo">Clientes recientes de Kommo</button>
+    </div>
+
+    <div class="controls">
+      <input id="searchInput" type="search" placeholder="Buscar por nombre, email, teléfono, canal o ciudad...">
+      <div class="note">Clientes Kommo se muestran por canal/etiqueta o por fecha reciente si no hay campo específico.</div>
+    </div>
+
+    <div class="table-card">
+      <table>
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>CPF</th>
+            <th>Nombre</th>
+            <th>Teléfono</th>
+            <th>Email</th>
+            <th>Valor</th>
+            <th>País</th>
+            <th>Ciudad</th>
+            <th>Estado</th>
+            <th>Canal</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="clientesTabla"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/config.js"></script>
+  <script src="/clientes.js"></script>
+</body>
+</html>

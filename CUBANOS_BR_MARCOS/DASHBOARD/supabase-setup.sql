@@ -18,6 +18,10 @@ CREATE POLICY "dashboard_read_salidas" ON public.salidas
 CREATE POLICY "dashboard_read_clientes" ON public.clientes
   FOR SELECT TO anon, authenticated USING (true);
 
+DROP POLICY IF EXISTS "dashboard_update_clientes" ON public.clientes;
+CREATE POLICY "dashboard_update_clientes" ON public.clientes
+  FOR UPDATE TO anon, authenticated USING (true);
+
 ALTER PUBLICATION supabase_realtime ADD TABLE public.entradas;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.salidas;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.clientes;
