@@ -39,6 +39,13 @@
     .controls { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 1rem; flex-wrap: wrap; }
     .controls input { width: 100%; max-width: 420px; padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--border); background: #fff; }
     .note { color: var(--muted); font-size: 13px; }
+    .app-shell { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+    .sidebar { background: #111827; color: #f8fafc; padding: 1.5rem 1rem; display: flex; flex-direction: column; gap: 1rem; }
+    .sidebar .brand { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: #94a3b8; margin-bottom: 1rem; }
+    .sidebar nav { display: flex; flex-direction: column; gap: 8px; }
+    .sidebar-link { display: block; padding: 11px 14px; border-radius: 12px; color: #e2e8f0; text-decoration: none; font-size: 14px; transition: background .2s ease, color .2s ease; }
+    .sidebar-link.active, .sidebar-link:hover { background: #1d4ed8; color: #fff; }
+    @media (max-width: 900px) { .app-shell { grid-template-columns: 1fr; } .sidebar { flex-direction: row; align-items: center; justify-content: space-between; padding: 1rem; } .sidebar nav { flex-direction: row; gap: 6px; overflow-x: auto; } }
     .table-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: auto; }
     table { width: 100%; border-collapse: collapse; min-width: 940px; }
     th, td { padding: 12px 14px; border-bottom: 1px solid var(--border); font-size: 13px; text-align: left; vertical-align: middle; }
@@ -53,18 +60,26 @@
   </style>
 </head>
 <body>
-  <div class="dash">
-    <div class="top-bar">
-      <div>
-        <div class="subtitle">Edición de clientes</div>
-        <h1>Clientes Supabase</h1>
-      </div>
-      <div class="actions">
-        <a class="button secondary" href="index.html">Volver al dashboard</a>
-        <span id="statusBadge" class="status-badge status-loading">Conectando...</span>
-      </div>
-    </div>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">Plataforma Cubanos BR</div>
+      <nav>
+        <a href="index.html" class="sidebar-link">Dashboard</a>
+        <a href="clientes.html" class="sidebar-link active">Clientes</a>
+      </nav>
+    </aside>
 
+    <div class="dash">
+      <div class="top-bar">
+        <div>
+          <div class="subtitle">Edición de clientes</div>
+          <h1>Clientes Supabase</h1>
+        </div>
+        <div class="actions">
+          <a class="button secondary" href="index.html">Volver al dashboard</a>
+          <span id="statusBadge" class="status-badge status-loading">Conectando...</span>
+        </div>
+      </div>
     <div class="tabs">
       <button type="button" class="tab active" data-tab="all">Todos los clientes</button>
       <button type="button" class="tab" data-tab="kommo">Clientes recientes de Kommo</button>
@@ -95,6 +110,7 @@
         <tbody id="clientesTabla"></tbody>
       </table>
     </div>
+  </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
